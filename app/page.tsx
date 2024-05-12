@@ -21,6 +21,7 @@ const IndexPage: React.FC = () => {
 
 
   const fetchData = async () => {
+    setIsLoading(true);
     try {
       const response = await axios.get(process.env.NEXT_PUBLIC_API_URL + '/api/downloads', {
         params: {
@@ -34,6 +35,8 @@ const IndexPage: React.FC = () => {
       setTotalPages(response.data.pagination.total);
     } catch (error) {
       setError('An error occurred while fetching data.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -96,14 +99,12 @@ const IndexPage: React.FC = () => {
     return `${day < 10 ? '0' + day : day}-${month < 10 ? '0' + month : month}-${year} ${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
   };
 
-
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <div className={`min-h-screen bg-gray-100 flex flex-col ${isLoading ? 'relative' : ''}`}>
           {isLoading && (
-            <div className="absolute top-0 left-0 w-full h-full bg-black opacity-30 z-50 flex justify-center items-center">
+            <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center">
               <Triangle color='#2564eb' width={50} />
             </div>
           )}
@@ -172,7 +173,14 @@ const IndexPage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {downloadData && downloadData.data !== null && downloadData.data.length > 0 ? (
+                    {isLoading ? (
+                      <tr>
+                        <td colSpan={5} className="p-2 text-center">
+                          <Triangle color="#358BF6" height={20} width={20} />
+
+                        </td>
+                      </tr>
+                    ) : downloadData && downloadData.data !== null && downloadData.data.length > 0 ? (
                       downloadData.data.map((download: any, index: number) => (
                         <tr key={download.id} className="border-b">
                           <td className="p-2 text-xs">{totalPages - (10 * (currentPage - 1) + index)}</td>
@@ -188,6 +196,7 @@ const IndexPage: React.FC = () => {
                       </tr>
                     )}
                   </tbody>
+
                 </table>
               </div>
               <div className="mt-4">
